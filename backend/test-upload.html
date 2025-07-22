@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CASA - Test Image Upload</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .image-preview {
+            margin-top: 10px;
+        }
+        .image-preview img {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 CASA - Test Image Upload & Product Creation</h1>
+        
+        <!-- Single Image Upload -->
+        <h2>📸 Single Image Upload</h2>
+        <form id="singleImageForm">
+            <div class="form-group">
+                <label for="singleImage">Select Image:</label>
+                <input type="file" id="singleImage" name="image" accept="image/*" required>
+            </div>
+            <button type="submit">Upload Image</button>
+        </form>
+        <div id="singleResult" class="result"></div>
+
+        <hr style="margin: 40px 0;">
+
+        <!-- Product Creation with Images -->
+        <h2>👗 Create Product with Images</h2>
+        <form id="productForm">
+            <div class="form-group">
+                <label for="productName">Product Name:</label>
+                <input type="text" id="productName" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="productDescription">Description:</label>
+                <textarea id="productDescription" name="description" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="productBrand">Brand:</label>
+                <input type="text" id="productBrand" name="brand" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="productCategory">Category:</label>
+                <select id="productCategory" name="category" required>
+                    <option value="">Select Category</option>
+                    <option value="tops">Tops</option>
+                    <option value="bottoms">Bottoms</option>
+                    <option value="dresses">Dresses</option>
+                    <option value="outerwear">Outerwear</option>
+                    <option value="footwear">Footwear</option>
+                    <option value="accessories">Accessories</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="productGender">Gender:</label>
+                <select id="productGender" name="gender" required>
+                    <option value="">Select Gender</option>
+                    <option value="men">Men</option>
+                    <option value="women">Women</option>
+                    <option value="unisex">Unisex</option>
+                    <option value="kids">Kids</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="productPrice">Price (Original):</label>
+                <input type="number" id="productPrice" name="originalPrice" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="productCurrentPrice">Current Price:</label>
+                <input type="number" id="productCurrentPrice" name="currentPrice" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="productImages">Product Images (up to 5):</label>
+                <input type="file" id="productImages" name="images" accept="image/*" multiple required>
+            </div>
+            
+            <button type="submit">Create Product</button>
+        </form>
+        <div id="productResult" class="result"></div>
+    </div>
+
+    <script>
+        // Single image upload
+        document.getElementById('singleImageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const fileInput = document.getElementById('singleImage');
+            formData.append('image', fileInput.files[0]);
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/upload/image', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('singleResult');
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Success!</strong> ${result.message}<br>
+                        <strong>URL:</strong> ${result.data.url}<br>
+                        <div class="image-preview">
+                            <img src="${result.data.url}" alt="Uploaded image">
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<strong>Error:</strong> ${result.message}`;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('singleResult');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.style.display = 'block';
+            }
+        });
+
+        // Product creation
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            
+            // Add text fields
+            formData.append('name', document.getElementById('productName').value);
+            formData.append('description', document.getElementById('productDescription').value);
+            formData.append('brand', document.getElementById('productBrand').value);
+            formData.append('category', document.getElementById('productCategory').value);
+            formData.append('gender', document.getElementById('productGender').value);
+            
+            // Add price as JSON
+            const price = {
+                original: parseInt(document.getElementById('productPrice').value),
+                current: parseInt(document.getElementById('productCurrentPrice').value),
+                currency: 'INR'
+            };
+            formData.append('price', JSON.stringify(price));
+            
+            // Add images
+            const imageFiles = document.getElementById('productImages').files;
+            for (let i = 0; i < imageFiles.length; i++) {
+                formData.append('images', imageFiles[i]);
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/products', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                const resultDiv = document.getElementById('productResult');
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <strong>Success!</strong> Product created successfully!<br>
+                        <strong>Product ID:</strong> ${result.data.product._id}<br>
+                        <strong>Name:</strong> ${result.data.product.name}<br>
+                        <strong>Images:</strong> ${result.data.product.images.length} uploaded<br>
+                        <div class="image-preview">
+                            ${result.data.product.images.map(img => `<img src="${img.url}" alt="Product image">`).join('')}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `<strong>Error:</strong> ${result.message}`;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                const resultDiv = document.getElementById('productResult');
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `<strong>Error:</strong> ${error.message}`;
+                resultDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

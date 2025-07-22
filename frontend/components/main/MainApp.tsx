@@ -4,19 +4,30 @@ import { useState } from 'react';
 import { Home, Compass, Heart, ShoppingBag, User } from 'lucide-react';
 import { HomePage } from './HomePage';
 import { ExplorePage } from './ExplorePage';
-import { SwipePage } from './SwipePage';
+import { ConnectedSwipePage } from './ConnectedSwipePage';
 import { WishlistPage } from './WishlistPage';
 import { ProfilePage } from './ProfilePage';
+import { type User } from '@/lib/api';
 
-export function MainApp() {
+interface MainAppProps {
+  user: User;
+  onSignOut: () => void;
+}
+
+export function MainApp({ user, onSignOut }: MainAppProps) {
   const [currentTab, setCurrentTab] = useState('home');
 
   const tabs = [
     { id: 'home', label: 'Home', icon: Home, component: HomePage },
     { id: 'explore', label: 'Explore', icon: Compass, component: ExplorePage },
-    { id: 'swipe', label: 'Swipe', icon: Heart, component: SwipePage },
+    { id: 'swipe', label: 'Swipe', icon: Heart, component: ConnectedSwipePage },
     { id: 'wishlist', label: 'Wishlist', icon: ShoppingBag, component: WishlistPage },
-    { id: 'profile', label: 'Profile', icon: User, component: ProfilePage }
+    {
+      id: 'profile',
+      label: 'Profile',
+      icon: User,
+      component: () => <ProfilePage onSignOut={onSignOut} />
+    }
   ];
 
   const CurrentComponent = tabs.find(tab => tab.id === currentTab)?.component || HomePage;
