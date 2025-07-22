@@ -26,5 +26,8 @@
     "multer": "^2.0.2",
     "node-fetch": "^2.7.0",
     "path-to-regexp": "^6.2.1"
+
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   }
 }
