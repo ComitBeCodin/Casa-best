@@ -6,8 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { User, MapPin, Bell, Heart, ShoppingBag, Settings, LogOut, Edit } from 'lucide-react';
+import { storage } from '@/lib/api';
 
-export function ProfilePage() {
+interface ProfilePageProps {
+  onSignOut: () => void;
+}
+
+export function ProfilePage({ onSignOut }: ProfilePageProps) {
   const [notifications, setNotifications] = useState(true);
   const [instantDelivery, setInstantDelivery] = useState(true);
 
@@ -18,7 +23,9 @@ export function ProfilePage() {
     following: 45
   };
 
-  const preferences = JSON.parse(localStorage.getItem('casa-userData') || '{}');
+  // Get user data from storage
+  const user = storage.getUser();
+  const preferences = user || {};
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -40,10 +47,12 @@ export function ProfilePage() {
               <User className="w-8 h-8 text-black" />
             </div>
             <div className="flex-1">
-              <h2 className="text-xl font-bold text-white">Fashion Explorer</h2>
+              <h2 className="text-xl font-bold text-white">
+                {user?.phone ? `+91 ${user.phone}` : 'Fashion Explorer'}
+              </h2>
               <div className="flex items-center space-x-1 text-gray-400">
                 <MapPin className="w-3 h-3" />
-                <span className="text-sm">{preferences.location || 'Mumbai, Maharashtra'}</span>
+                <span className="text-sm">{user?.location || 'Mumbai, Maharashtra'}</span>
               </div>
             </div>
             <Button variant="outline" size="sm" className="border-border">
@@ -79,14 +88,14 @@ export function ProfilePage() {
             <div>
               <span className="text-sm text-gray-400 block mb-2">Age Group</span>
               <Badge variant="secondary" className="bg-primary/20 text-primary">
-                {preferences.age || 'Gen Z (18-25)'}
+                {user?.age ? `${user.age} years` : 'Gen Z (18-25)'}
               </Badge>
             </div>
             
             <div>
               <span className="text-sm text-gray-400 block mb-2">Style Interests</span>
               <div className="flex flex-wrap gap-2">
-                {(preferences.interests || ['Streetwear', 'Y2K', 'Vintage']).map(interest => (
+                {(user?.interests || ['Streetwear', 'Y2K', 'Vintage']).map(interest => (
                   <Badge key={interest} variant="outline" className="border-border text-gray-300">
                     {interest}
                   </Badge>
@@ -97,7 +106,7 @@ export function ProfilePage() {
             <div>
               <span className="text-sm text-gray-400 block mb-2">Preferred Fits</span>
               <div className="flex flex-wrap gap-2">
-                {(preferences.fits || ['Oversized', 'Loose']).map(fit => (
+                {(user?.fits || ['Oversized', 'Loose']).map(fit => (
                   <Badge key={fit} variant="outline" className="border-border text-gray-300">
                     {fit}
                   </Badge>
@@ -161,12 +170,14 @@ export function ProfilePage() {
         </Card>
 
         {/* Logout */}
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
           onClick={() => {
-            localStorage.removeItem('casa-onboarded');
-            window.location.reload();
+            // Clear user session
+            storage.clearSession();
+            // Call parent sign out handler
+            onSignOut();
           }}
         >
           <LogOut className="w-4 h-4 mr-2" />
